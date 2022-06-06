@@ -1,10 +1,5 @@
 #Spaceinvaders with pygame
 
-# weapon upgrade
-# 1. thing -> weapon lv text
-# 2. thing -> weapon bullet sizes and bullet speed
-# 3. thing -> weapon upgrade when enemy killed
-
 import pygame
 from sys import exit
 
@@ -18,11 +13,16 @@ class Ship:
     def show(self,screen):
         screen.blit(self.img,(self.x,self.y))
 
+    def collision(self,obj):
+        return collide(self,obj)
+
 class Player(Ship):
     def __init__(self,surf,x,y):
         super().__init__(surf,x,y)
         self.img=pygame.image.load("player.png")
         self.mask=pygame.mask.from_surface(self.img)
+        self.lv=1
+        self.xp=0
 
 
 class Enemy(Ship):
@@ -46,11 +46,8 @@ class playerBullet:
     def show(self,screen):
         screen.blit(self.img,(self.x,self.y))
 
-    def move(self):
-        self.y-=2
-
-    def collision(self,obj):
-        return collide(self,obj)
+    def move(self,lv):
+        self.y-=1.5*(lv/2)
 
 def collide(obj1,obj2):
     offset_x=obj2.x-obj1.x
@@ -69,10 +66,13 @@ def main():
 
     p=Player(screen,0,350)
 
+    font = pygame.font.Font("freesansbold.ttf",18)
+
     velocity=3
 
     bullets=[]
-    e=Enemy(screen,300,-100)
+    enemies=[]
+    enemies.append(Enemy(screen,300,-100))
 
     while True:
         clock.tick(FPS)
@@ -86,20 +86,35 @@ def main():
                     bullets.append(bullet)
 
         screen.fill("black")
+
+        text_lv = font.render(f"Level: {p.lv}",1,"white")
+        text_hp = font.render(f"Health: {p.health}",1,"white")
+        screen.blit(text_hp,(1,1))
+        screen.blit(text_lv,(width-text_lv.get_rect().width,1))
         
         p.show(screen)
 
         for bullet in bullets:
-            bullet.move()
+            bullet.move(p.lv)
             bullet.show(screen)
-            if bullet.collision(e):
-                bullets.remove(bullet)
-                e.health-=12
-                print(e.health)
+            for e in enemies:
+                if e.collision(bullet):
+                    bullets.remove(bullet)
+                    e.health-=12
 
-        if e.health > 0:
-            e.move()
-            e.show(screen)
+        for e in enemies:
+            if e.health > 0:
+                e.move()
+                e.show(screen)
+            else:
+                enemies.remove(e)
+                p.xp+=10
+                if p.xp >=100:
+                    p.lv+=1
+                    p.xp=p.xp-100
+            if p.collision(e):
+                p.health-=5
+                enemies.remove(e)
 
 
         keys = pygame.key.get_pressed()
@@ -112,10 +127,6 @@ def main():
             p.x -= velocity
         if keys[pygame.K_d] == True and p.x+50<width:
             p.x += velocity
-
-        #if p.img.get_rect().colliderect(e.img.get_rect()):
-           # pygame.draw.rect(screen,"red",p.img.get_rect(),4)
-
 
         pygame.display.update()
         pygame.time.delay(10)
