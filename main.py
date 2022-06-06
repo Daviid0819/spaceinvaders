@@ -1,6 +1,9 @@
 #Spaceinvaders with pygame
 
-# bullets -> kills enemy
+# weapon upgrade
+# 1. thing -> weapon lv text
+# 2. thing -> weapon bullet sizes and bullet speed
+# 3. thing -> weapon upgrade when enemy killed
 
 import pygame
 from sys import exit
@@ -109,9 +112,6 @@ def main():
             p.x -= velocity
         if keys[pygame.K_d] == True and p.x+50<width:
             p.x += velocity
-        #if keys[pygame.K_SPACE] == True:
-           # bullet = playerBullet(screen,p.x+25,p.y)
-           # bullets.append(bullet)
 
         #if p.img.get_rect().colliderect(e.img.get_rect()):
            # pygame.draw.rect(screen,"red",p.img.get_rect(),4)
