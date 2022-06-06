@@ -1,7 +1,6 @@
 #Spaceinvaders with pygame
 
 #bullet thing
-#modified bullet speed by Dave
 
 import pygame
 from sys import exit
@@ -18,7 +17,7 @@ class playerBullet:
         screen.blit(self.img,(self.x,self.y))
 
     def move(self):
-        self.y-=3
+        self.y-=2
 
     def collision(self,obj):
         return collide(self,obj)
