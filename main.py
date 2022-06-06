@@ -1,5 +1,7 @@
 #Spaceinvaders with pygame
 
+# bullets -> kills enemy
+
 import pygame
 from sys import exit
 
@@ -22,6 +24,7 @@ class playerBullet:
 
 class Enemy:
     def __init__(self,surf,x,y):
+        self.health = 100
         self.surf=surf
         self.x=x
         self.y=y
