@@ -6,12 +6,13 @@ from sys import exit
 class Ship:
     def __init__(self,surf,x,y):
         self.health = 100
+        self.ammo=0
         self.surf=surf
         self.x=x
         self.y=y
 
-    def show(self,screen):
-        screen.blit(self.img,(self.x,self.y))
+    def show(self):
+        self.surf.blit(self.img,(self.x,self.y))
 
     def collision(self,obj):
         return collide(self,obj)
@@ -23,6 +24,7 @@ class Player(Ship):
         self.mask=pygame.mask.from_surface(self.img)
         self.lv=1
         self.xp=0
+        self.ammo=30
 
 
 class Enemy(Ship):
@@ -30,24 +32,35 @@ class Enemy(Ship):
         super().__init__(surf,x,y)
         self.img=pygame.image.load("enemy.png")
         self.mask=pygame.mask.from_surface(self.img)
+        self.ammo=10
 
 
     def move(self):
         self.y+=1
 
-class playerBullet:
+class Bullet:
     def __init__(self,surf,x,y):
         self.surf=surf
         self.x=x
         self.y=y
-        self.img=pygame.image.load("bullet.png")
-        self.mask=pygame.mask.from_surface(self.img)
 
-    def show(self,screen):
-        screen.blit(self.img,(self.x,self.y))
+    def show(self):
+        self.surf.blit(self.img,(self.x,self.y))
 
     def move(self,lv):
         self.y-=1.5*(lv/2)
+
+class playerBullet(Bullet):
+    def __init__(self,surf,x,y):
+        super().__init__(surf,x,y)
+        self.img=pygame.image.load("bullet.png")
+        self.mask=pygame.mask.from_surface(self.img)
+
+class enemyBullet(Bullet):
+    def __init__(self,surf,x,y):
+        super().__init__(surf,x,y)
+        self.img=pygame.image.load("ebullet.png")
+        self.mask=pygame.mask.from_surface(self.img)
 
 def collide(obj1,obj2):
     offset_x=obj2.x-obj1.x
@@ -62,41 +75,42 @@ def main():
     screen = pygame.display.set_mode((width,height))
     pygame.display.set_caption("GTA VI")
     clock = pygame.time.Clock()
-    FPS=60
 
-    p=Player(screen,0,350)
+    p=Player(screen,(width/2)-25,400)
 
     font = pygame.font.Font("freesansbold.ttf",18)
-
-    velocity=3
 
     bullets=[]
     enemies=[]
     enemies.append(Enemy(screen,300,-100))
 
     while True:
-        clock.tick(FPS)
+        clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    bullet = playerBullet(screen,p.x+25,p.y)
-                    bullets.append(bullet)
+                    if p.ammo > 0:
+                        bullet = playerBullet(screen,p.x+25,p.y)
+                        bullets.append(bullet)
+                        p.ammo-=1
 
         screen.fill("black")
 
         text_lv = font.render(f"Level: {p.lv}",1,"white")
         text_hp = font.render(f"Health: {p.health}",1,"white")
+        text_ammo = font.render(f"Ammo: {p.ammo}",1,"white")
         screen.blit(text_hp,(1,1))
         screen.blit(text_lv,(width-text_lv.get_rect().width,1))
+        screen.blit(text_ammo,(1,text_hp.get_rect().height+1))
         
-        p.show(screen)
+        p.show()
 
         for bullet in bullets:
             bullet.move(p.lv)
-            bullet.show(screen)
+            bullet.show()
             for e in enemies:
                 if e.collision(bullet):
                     bullets.remove(bullet)
@@ -105,11 +119,12 @@ def main():
         for e in enemies:
             if e.health > 0:
                 e.move()
-                e.show(screen)
+                e.show()
             else:
                 enemies.remove(e)
                 p.xp+=10
-                if p.xp >=100:
+                p.ammo+=5
+                if p.xp >=100 and p.lv!=20:
                     p.lv+=1
                     p.xp=p.xp-100
             if p.collision(e):
@@ -120,13 +135,13 @@ def main():
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_w] == True and p.y>0:
-            p.y -= velocity
+            p.y -= 3
         if keys[pygame.K_s] == True and p.y+50<height:
-            p.y += velocity
+            p.y += 3
         if keys[pygame.K_a] == True and p.x>0:
-            p.x -= velocity
+            p.x -= 3
         if keys[pygame.K_d] == True and p.x+50<width:
-            p.x += velocity
+            p.x += 3
 
         pygame.display.update()
         pygame.time.delay(10)
