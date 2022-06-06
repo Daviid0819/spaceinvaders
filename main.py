@@ -5,6 +5,33 @@
 import pygame
 from sys import exit
 
+class Ship:
+    def __init__(self,surf,x,y):
+        self.health = 100
+        self.surf=surf
+        self.x=x
+        self.y=y
+
+    def show(self,screen):
+        screen.blit(self.img,(self.x,self.y))
+
+class Player(Ship):
+    def __init__(self,surf,x,y):
+        super().__init__(surf,x,y)
+        self.img=pygame.image.load("player.png")
+        self.mask=pygame.mask.from_surface(self.img)
+
+
+class Enemy(Ship):
+    def __init__(self,surf,x,y):
+        super().__init__(surf,x,y)
+        self.img=pygame.image.load("enemy.png")
+        self.mask=pygame.mask.from_surface(self.img)
+
+
+    def move(self):
+        self.y+=1
+
 class playerBullet:
     def __init__(self,surf,x,y):
         self.surf=surf
@@ -22,21 +49,6 @@ class playerBullet:
     def collision(self,obj):
         return collide(self,obj)
 
-class Enemy:
-    def __init__(self,surf,x,y):
-        self.health = 100
-        self.surf=surf
-        self.x=x
-        self.y=y
-        self.img=pygame.image.load("enemy.png")
-        self.mask=pygame.mask.from_surface(self.img)
-
-    def show(self,screen):
-        screen.blit(self.img,(self.x,self.y))
-
-    def move(self):
-        self.y+=1
-
 def collide(obj1,obj2):
     offset_x=obj2.x-obj1.x
     offset_y=obj2.y-obj1.y
@@ -52,11 +64,7 @@ def main():
     clock = pygame.time.Clock()
     FPS=60
 
-    player = pygame.image.load("player.png")
-    p_rect = player.get_rect()
-    p_rect.x = 0
-    p_rect.y = 350
-    health=100
+    p=Player(screen,0,350)
 
     velocity=3
 
@@ -69,35 +77,44 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    bullet = playerBullet(screen,p.x+25,p.y)
+                    bullets.append(bullet)
 
         screen.fill("black")
-        screen.blit(player,p_rect)
-
-        e.move()
-        e.show(screen)
+        
+        p.show(screen)
 
         for bullet in bullets:
             bullet.move()
             bullet.show(screen)
             if bullet.collision(e):
-                pygame.draw.rect(screen, "blue", pygame.Rect(bullet.x,bullet.y,10,20), 10)
+                bullets.remove(bullet)
+                e.health-=12
+                print(e.health)
+
+        if e.health > 0:
+            e.move()
+            e.show(screen)
+
 
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_w] == True and p_rect.y>0:
-            p_rect.y -= velocity
-        if keys[pygame.K_s] == True and p_rect.y+50<height:
-            p_rect.y += velocity
-        if keys[pygame.K_a] == True and p_rect.x>0:
-            p_rect.x -= velocity
-        if keys[pygame.K_d] == True and p_rect.x+50<width:
-            p_rect.x += velocity
-        if keys[pygame.K_SPACE] == True:
-            bullet = playerBullet(screen,p_rect.x+25,p_rect.y)
-            bullets.append(bullet)
+        if keys[pygame.K_w] == True and p.y>0:
+            p.y -= velocity
+        if keys[pygame.K_s] == True and p.y+50<height:
+            p.y += velocity
+        if keys[pygame.K_a] == True and p.x>0:
+            p.x -= velocity
+        if keys[pygame.K_d] == True and p.x+50<width:
+            p.x += velocity
+        #if keys[pygame.K_SPACE] == True:
+           # bullet = playerBullet(screen,p.x+25,p.y)
+           # bullets.append(bullet)
 
-        if p_rect.colliderect(e.img.get_rect()):
-            pygame.draw.rect(screen,"red",p_rect,4)
+        #if p.img.get_rect().colliderect(e.img.get_rect()):
+           # pygame.draw.rect(screen,"red",p.img.get_rect(),4)
 
 
         pygame.display.update()
