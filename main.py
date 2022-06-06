@@ -1,7 +1,5 @@
 #Spaceinvaders with pygame
 
-#bullet thing
-
 import pygame
 from sys import exit
 
