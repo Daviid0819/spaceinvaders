@@ -116,6 +116,8 @@ def main():
         for bullet in bullets:
             bullet.move(p.lv)
             bullet.show()
+            if bullet.y<0:
+                bullets.remove(bullet)
             for e in enemies:
                 if e.collision(bullet):
                     bullets.remove(bullet)
