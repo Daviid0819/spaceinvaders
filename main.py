@@ -2,6 +2,7 @@
 
 import pygame
 from sys import exit
+import random
 
 class Ship:
     def __init__(self,surf,x,y):
@@ -32,7 +33,6 @@ class Enemy(Ship):
         super().__init__(surf,x,y)
         self.img=pygame.image.load("enemy.png")
         self.mask=pygame.mask.from_surface(self.img)
-        self.ammo=10
 
 
     def move(self):
@@ -82,7 +82,6 @@ def main():
 
     bullets=[]
     enemies=[]
-    enemies.append(Enemy(screen,300,-100))
 
     while True:
         clock.tick(60)
@@ -108,13 +107,19 @@ def main():
         
         p.show()
 
+        if not enemies:
+            i=0
+            while i<p.lv:
+                enemies.append(Enemy(screen,random.randint(0,width-50),random.randint(-200,-50)))
+                i+=1
+
         for bullet in bullets:
             bullet.move(p.lv)
             bullet.show()
             for e in enemies:
                 if e.collision(bullet):
                     bullets.remove(bullet)
-                    e.health-=12
+                    e.health-=20
 
         for e in enemies:
             if e.health > 0:
@@ -122,14 +127,26 @@ def main():
                 e.show()
             else:
                 enemies.remove(e)
-                p.xp+=10
+                p.xp+=10/p.lv
                 p.ammo+=5
                 if p.xp >=100 and p.lv!=20:
                     p.lv+=1
                     p.xp=p.xp-100
+                    p.ammo+=10
+                    p.health+=10
+                    if p.health>100:
+                        p.health=100
             if p.collision(e):
                 p.health-=5
+                p.ammo+=2
                 enemies.remove(e)
+            if e.y > height:
+                enemies.remove(e)
+                p.health-=2
+
+        if p.health <= 0:
+            pygame.quit()
+            exit()
 
 
         keys = pygame.key.get_pressed()
