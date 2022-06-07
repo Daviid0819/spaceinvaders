@@ -9,4 +9,3 @@
 # - ammo system
 # - kill enemy -> weapon upgrade
 #  - bullet speed
-#  - bullet size
